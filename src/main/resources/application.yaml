@@ -1,0 +1,5 @@
+file:
+    mnt1: /mnt/fsrw1/
+    mnt2: /mnt/fsrw2/
+    name: FILE
+
