@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 @Component
@@ -19,15 +21,15 @@ public class FsrwHandler {
 
     private final FsUtil fsUtil;
 
-    private final FileProperties file;
+    private final FileProperties properties;
 
     private static Logger LOG = LoggerFactory.getLogger(FsrwHandler.class);
 
     @Autowired
-    public FsrwHandler(IOUtil ioUtil, FsUtil fsUtil, FileProperties file) {
+    public FsrwHandler(IOUtil ioUtil, FsUtil fsUtil, FileProperties properties) {
         this.ioUtil = ioUtil;
         this.fsUtil = fsUtil;
-        this.file = file;
+        this.properties = properties;
     }
 
 
@@ -46,35 +48,30 @@ public class FsrwHandler {
      private void start(FsEnum fs, String dev1, String dev2) {
         LOG.info("############## ".concat(fs.getValue()).concat(" ##############"));
 
-        if(fsUtil.isMounted(dev1))
-            fsUtil.umount(dev1);
-
+        if(!fsUtil.isMounted(dev1)) {
+            LOG.error("Disco origem precisa estar montado");
+            return;
+        }
          if(fsUtil.isMounted(dev2))
              fsUtil.umount(dev2);
 
-        LOG.info("Formatando... ".concat(dev1));
-        fsUtil.mkfs(fs, dev1);
         LOG.info("Formatando... ".concat(dev2));
         fsUtil.mkfs(fs, dev2);
 
-        fsUtil.mount(dev1, file.getMnt1());
-        byte[] data = this.getRandomData();
-        this.write(data);
-
-        fsUtil.mount(dev2, file.getMnt2());
-        this.readWrite();
+        fsUtil.mount(dev2, properties.getMnt2());
+        this.readWrite(dev1);
     }
 
     private void checkDevices(String dev1, String dev2) throws Exception {
         if(!fsUtil.isDevice(dev1) || !fsUtil.isDevice(dev2))
             throw new Exception("Invalid Device");
 
-        fsUtil.config(file.getMnt1(), file.getMnt2());
+        fsUtil.mkdir(properties.getMnt2());
     }
 
     private byte[] getRandomData() {
         Random random = new Random();
-        byte[] data = new byte[file.getSize()];
+        byte[] data = new byte[properties.getSize()];
         random.nextBytes(data);
         return data;
     }
@@ -82,11 +79,11 @@ public class FsrwHandler {
     private void write(byte[] data) {
         double totalTime = 0;
 
-        for(int i = 1; i <= file.getRepeat(); i++) {
+        for(int i = 1; i <= properties.getRepeat(); i++) {
             LOG.info("Iniciando escrita... " +i);
             double start = System.nanoTime();
 
-            ioUtil.put(file.getMnt1().concat(file.getName()) +i, data);
+            ioUtil.put(properties.getMnt1().concat(properties.getName()) +i, data);
 
             double finish = System.nanoTime();
             double time = (finish - start) / 1000000;
@@ -94,26 +91,30 @@ public class FsrwHandler {
             LOG.info("Tempo: " + time + " ms");
             LOG.info("----------");
         }
-        LOG.info("Tempo médio de R: " + totalTime/file.getRepeat());
+        LOG.info("Tempo médio de R: " + totalTime/ properties.getRepeat());
     }
 
-    private void readWrite() {
+    private void readWrite(String dev) {
         double rTime = 0;
         double rwTime = 0;
+        String basePath = fsUtil.getMntFrom(dev);
+        List<File> files = ioUtil.getAllFiles(basePath);
 
-        for(int i = 1; i <= file.getRepeat(); i++) {
-            LOG.info("Iniciando cópia... "+i);
+        for(File file : files) {
+            LOG.info("Iniciando cópia... " + file.getAbsolutePath());
             double start = System.nanoTime();
 
-            byte[] data = ioUtil.read(file.getMnt1().concat(file.getName()) +i);
+            byte[] data = ioUtil.read(file.getAbsolutePath());
 
             double finish = System.nanoTime();
             double time = (finish - start) / 1000000;
             LOG.info("Tempo leitura: " + time + " ms");
             rTime += time;
+
+            String destiny = file.getAbsolutePath().replaceAll(basePath, this.properties.getMnt2());
             start = System.nanoTime();
 
-            ioUtil.put(file.getMnt2().concat(file.getName()) +i, data);
+            ioUtil.put(destiny, data);
 
             finish = System.nanoTime();
             time = (finish - start) / 1000000;
@@ -121,8 +122,8 @@ public class FsrwHandler {
             LOG.info("Tempo escrita: " + time + " ms");
             LOG.info("----------");
         }
-        LOG.info("Tempo médio de R: " + rTime/file.getRepeat());
-        LOG.info("Tempo médio de RW: " + rwTime/file.getRepeat());
+        LOG.info("Tempo médio de R: " + rTime/files.size());
+        LOG.info("Tempo médio de RW: " + rwTime/files.size());
     }
 
 

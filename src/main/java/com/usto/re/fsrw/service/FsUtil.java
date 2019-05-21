@@ -82,9 +82,9 @@ public class FsUtil {
         }
     }
 
-    public boolean config(String mnt1, String mnt2) {
+    public boolean mkdir(String mnt1) {
         try {
-            String output = sh.run("conf.sh", mnt1, mnt2);
+            String output = sh.run("mkdir.sh", mnt1);
             return output.equals("0");
         } catch (Exception e) {
             LOG.error(e.getMessage());
@@ -99,6 +99,15 @@ public class FsUtil {
         } catch (Exception e) {
             LOG.error(e.getMessage());
             return false;
+        }
+    }
+
+    public String getMntFrom(String dev) {
+        try {
+            return sh.run("mnt.sh", dev);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            return "";
         }
     }
 }

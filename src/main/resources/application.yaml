@@ -1,9 +1,9 @@
 file:
     mnt1: /mnt/fsrw1/
-    mnt2: /mnt/fsrw2/
+    mnt2: /mnt/fsrw2
     name: FILE
     size: 41943040
-    repeat: 3
+    repeat: 100
     default:
         device1:
         device2:
