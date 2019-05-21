@@ -1,5 +1,6 @@
 package com.usto.re.fsrw;
 
+import com.usto.re.fsrw.properties.FileProperties;
 import com.usto.re.fsrw.service.FsEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +18,12 @@ public class FsrwApplication implements CommandLineRunner {
 
     private final FsrwHandler handler;
 
+    private final FileProperties file;
+
     @Autowired
-    public FsrwApplication(FsrwHandler handler) {
+    public FsrwApplication(FsrwHandler handler, FileProperties file) {
         this.handler = handler;
+        this.file = file;
     }
 
     public static void main(String[] args) {
@@ -36,7 +40,12 @@ public class FsrwApplication implements CommandLineRunner {
             handler.exec(FsEnum.fetch(args[0]), args[1], args[2]);
         else if(args != null && args.length == 2)
             handler.exec(FsEnum.NONE, args[0], args[1]);
-        else
-            LOG.info("Modo de uso >> this.jar [xfs | ext4 | brfs | f2fs | _ ]  [dev1]  [dev2]");
+        else {
+//            LOG.info("Modo de uso >> this.jar [xfs | ext4 | brfs | f2fs | _ ]  [dev1]  [dev2]");
+            String dev1 = file.getDefault().getDevice1();
+            String dev2 = file.getDefault().getDevice1();
+            FsEnum fs = FsEnum.fetch(file.getDefault().getFs());
+            handler.exec(fs, dev1, dev2);
+        }
     }
 }

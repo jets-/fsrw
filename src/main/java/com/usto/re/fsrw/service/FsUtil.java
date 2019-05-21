@@ -82,10 +82,19 @@ public class FsUtil {
         }
     }
 
-
-    public boolean config(String... args) {
+    public boolean config(String mnt1, String mnt2) {
         try {
-            String output = sh.run("conf.sh", args);
+            String output = sh.run("conf.sh", mnt1, mnt2);
+            return output.equals("0");
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean touch(String path) {
+        try {
+            String output = sh.run("touch.sh", path);
             return output.equals("0");
         } catch (Exception e) {
             LOG.error(e.getMessage());

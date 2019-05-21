@@ -3,4 +3,9 @@ file:
     mnt2: /mnt/fsrw2/
     name: FILE
     size: 41943040
+    repeat: 3
+    default:
+        device1:
+        device2:
+        fs: xfs
 

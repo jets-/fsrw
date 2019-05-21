@@ -59,17 +59,17 @@ public class FsrwHandler {
 
         fsUtil.mount(dev1, file.getMnt1());
         byte[] data = this.getRandomData();
-        this.logW(data);
+        this.write(data);
 
         fsUtil.mount(dev2, file.getMnt2());
-        this.logRW();
+        this.readWrite();
     }
 
     private void checkDevices(String dev1, String dev2) throws Exception {
         if(!fsUtil.isDevice(dev1) || !fsUtil.isDevice(dev2))
             throw new Exception("Invalid Device");
 
-        fsUtil.config(file.getMnt1(), file.getMnt2(), file.getName(), file.getName());
+        fsUtil.config(file.getMnt1(), file.getMnt2());
     }
 
     private byte[] getRandomData() {
@@ -79,35 +79,39 @@ public class FsrwHandler {
         return data;
     }
 
-    private void logW(byte[] data) {
-        LOG.info("Iniciando escrita...");
-        double start = System.nanoTime();
+    private void write(byte[] data) {
+        for(int i = 1; i <= file.getRepeat(); i++) {
+            LOG.info("Iniciando escrita... " +i);
+            double start = System.nanoTime();
 
-        ioUtil.put(file.getMnt1().concat(file.getName()), data);
+            ioUtil.put(file.getMnt1().concat(file.getName()) +i, data);
 
-        double finish = System.nanoTime();
-        double time = (finish - start)/1000000;
-        LOG.info("Tempo: " + time + " ms");
-        LOG.info("----------");
+            double finish = System.nanoTime();
+            double time = (finish - start) / 1000000;
+            LOG.info("Tempo: " + time + " ms");
+            LOG.info("----------");
+        }
     }
 
-    private void logRW() {
-        LOG.info("Iniciando cópia...");
-        double start = System.nanoTime();
+    private void readWrite() {
+        for(int i = 1; i <= file.getRepeat(); i++) {
+            LOG.info("Iniciando cópia... "+i);
+            double start = System.nanoTime();
 
-        byte[] data = ioUtil.read(file.getMnt1().concat(file.getName()));
+            byte[] data = ioUtil.read(file.getMnt1().concat(file.getName()) +i);
 
-        double finish = System.nanoTime();
-        double time = (finish - start)/1000000;
-        LOG.info("Tempo leitura: " + time + " ms");
-        start = System.nanoTime();
+            double finish = System.nanoTime();
+            double time = (finish - start) / 1000000;
+            LOG.info("Tempo leitura: " + time + " ms");
+            start = System.nanoTime();
 
-        ioUtil.put(file.getMnt2().concat(file.getName()), data);
+            ioUtil.put(file.getMnt2().concat(file.getName()) +i, data);
 
-        finish = System.nanoTime();
-        time = (finish - start)/1000000;
-        LOG.info("Tempo escrita: " + time + " ms");
-        LOG.info("----------");
+            finish = System.nanoTime();
+            time = (finish - start) / 1000000;
+            LOG.info("Tempo escrita: " + time + " ms");
+            LOG.info("----------");
+        }
     }
 
 
