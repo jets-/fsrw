@@ -5,7 +5,7 @@ function main {
     DEV=$2
 
     if [ ${FS} = 'ext4' ]; then
-        CMD=`mkfs -t ${FS} ${DEV}`
+        CMD=`mkfs -t ${FS} -F ${DEV}`
     else
         CMD=`mkfs -t ${FS} -f ${DEV}`
     fi

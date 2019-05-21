@@ -80,6 +80,8 @@ public class FsrwHandler {
     }
 
     private void write(byte[] data) {
+        double totalTime = 0;
+
         for(int i = 1; i <= file.getRepeat(); i++) {
             LOG.info("Iniciando escrita... " +i);
             double start = System.nanoTime();
@@ -88,12 +90,17 @@ public class FsrwHandler {
 
             double finish = System.nanoTime();
             double time = (finish - start) / 1000000;
+            totalTime += time;
             LOG.info("Tempo: " + time + " ms");
             LOG.info("----------");
         }
+        LOG.info("Tempo médio de R: " + totalTime/file.getRepeat());
     }
 
     private void readWrite() {
+        double rTime = 0;
+        double rwTime = 0;
+
         for(int i = 1; i <= file.getRepeat(); i++) {
             LOG.info("Iniciando cópia... "+i);
             double start = System.nanoTime();
@@ -103,15 +110,19 @@ public class FsrwHandler {
             double finish = System.nanoTime();
             double time = (finish - start) / 1000000;
             LOG.info("Tempo leitura: " + time + " ms");
+            rTime += time;
             start = System.nanoTime();
 
             ioUtil.put(file.getMnt2().concat(file.getName()) +i, data);
 
             finish = System.nanoTime();
             time = (finish - start) / 1000000;
+            rwTime += time;
             LOG.info("Tempo escrita: " + time + " ms");
             LOG.info("----------");
         }
+        LOG.info("Tempo médio de R: " + rTime/file.getRepeat());
+        LOG.info("Tempo médio de RW: " + rwTime/file.getRepeat());
     }
 
 
