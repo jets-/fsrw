@@ -35,7 +35,7 @@ public class Task {
         int returnCode = process.waitFor();
 
         if(returnCode == 0){
-            return this.getOutput(process.getErrorStream());
+            return this.getOutput(process.getInputStream());
         } else {
             String output = this.getOutput(process.getErrorStream());
             throw new RuntimeException(output);

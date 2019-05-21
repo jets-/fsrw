@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public enum FsEnum {
 
-    XFS("xfs"), EXT4("ext4"), BRFS("brfs"), F2FS("f2fs"), NONE("");
+    XFS("xfs"), EXT4("ext4"), BTRFS("btrfs"), F2FS("f2fs"), NONE("");
 
     private final String name;
 

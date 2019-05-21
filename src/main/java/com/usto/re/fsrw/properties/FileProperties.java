@@ -10,14 +10,16 @@ public class FileProperties {
     private String name;
     private String mnt1;
     private String mnt2;
+    private Integer size;
 
     public FileProperties() {
     }
 
-    public FileProperties(String name, String mnt1, String mnt2) {
+    public FileProperties(String name, String mnt1, String mnt2, Integer size) {
         this.name = name;
         this.mnt1 = mnt1;
         this.mnt2 = mnt2;
+        this.size = size;
     }
 
     public String getName() {
@@ -42,5 +44,13 @@ public class FileProperties {
 
     public void setMnt2(String mnt2) {
         this.mnt2 = mnt2;
+    }
+
+    public Integer getSize() {
+        return size;
+    }
+
+    public void setSize(Integer size) {
+        this.size = size;
     }
 }

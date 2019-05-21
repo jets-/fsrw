@@ -9,16 +9,18 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.util.Arrays;
-
 @SpringBootApplication
 public class FsrwApplication implements CommandLineRunner {
 
     private static Logger LOG = LoggerFactory
             .getLogger(FsrwApplication.class);
 
+    private final FsrwHandler handler;
+
     @Autowired
-    private FsrwHandler handler;
+    public FsrwApplication(FsrwHandler handler) {
+        this.handler = handler;
+    }
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(FsrwApplication.class);
@@ -30,44 +32,11 @@ public class FsrwApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if(args != null && args.length > 2)  {
-            String[] io = Arrays.copyOfRange(args, 1, args.length);
-            switch (FsEnum.fetch(args[0])) {
-                case XFS:
-                    handler.xfs(getInput(io), getOutput(io));
-                    break;
-                case EXT4:
-                    handler.ext4(getInput(io), getOutput(io));
-                    break;
-                case BRFS:
-                    handler.brfs(getInput(io), getOutput(io));
-                    break;
-                case F2FS:
-                    handler.f2fs(getInput(io), getOutput(io));
-                    break;
-                default:
-                    handler.full(getInput(args), getOutput(args));
-                    break;
-            }
-        } else if(args != null && args.length == 2)
-            handler.full(getInput(args), getOutput(args));
+        if(args != null && args.length > 2)
+            handler.exec(FsEnum.fetch(args[0]), args[1], args[2]);
+        else if(args != null && args.length == 2)
+            handler.exec(FsEnum.NONE, args[0], args[1]);
         else
             LOG.info("Modo de uso >> this.jar [xfs | ext4 | brfs | f2fs | _ ]  [dev1]  [dev2]");
-    }
-
-    private String getInput(String... args) {
-        String input = null;
-        if(args.length > 0 && args[0] != null && !args[0].equals("")) {
-            input = args[0];
-        }
-        return input;
-    }
-
-    private String getOutput(String... args) {
-        String output = null;
-        if(args.length > 1 && args[1] != null && !args[1].equals("")) {
-            output = args[1];
-        }
-        return output;
     }
 }

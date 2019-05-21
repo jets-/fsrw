@@ -9,14 +9,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class FsUtil {
 
-    @Autowired
-    private Task sh;
+    private final Task sh;
 
     private static Logger LOG = LoggerFactory.getLogger(FsrwHandler.class);
 
-    public boolean mount(String fs, String dev, String mnt) {
+    @Autowired
+    public FsUtil(Task sh) {
+        this.sh = sh;
+    }
+
+    public boolean mkfs(FsEnum fs, String dev) {
         try {
-            String output = sh.run("mount.sh", fs, dev, mnt);
+            String output = sh.run("mkfs.sh", fs.getValue().toLowerCase(), dev);
             return output.equals("0");
         } catch (Exception e) {
             LOG.error(e.getMessage());
@@ -24,9 +28,19 @@ public class FsUtil {
         }
     }
 
-    public boolean umount(String dev, String mnt) {
+    public boolean mount(String dev, String mnt) {
         try {
-            String output = sh.run("umount.sh", dev, dev);
+            String output = sh.run("mount.sh", dev, mnt);
+            return output.equals("0");
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean umount(String dev) {
+        try {
+            String output = sh.run("umount.sh", dev);
             return output.equals("0");
         } catch (Exception e) {
             LOG.error(e.getMessage());
@@ -35,6 +49,47 @@ public class FsUtil {
     }
 
     public boolean clear(String mnt) {
+        try {
+            String output = sh.run("rm.sh", mnt);
+            return output.equals("0");
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
             return false;
+        }
+    }
+
+    public boolean isDevice(String dev) {
+        try {
+            String output = sh.run("dev.sh", dev, dev);
+            return output.equals("0");
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean isFreeToUse(String dev) {
+        return this.isDevice(dev) && this.isMounted(dev);
+    }
+
+    public boolean isMounted(String dev) {
+        try {
+            String output = sh.run("mounted.sh", dev, dev);
+            return output.equals("0");
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            return false;
+        }
+    }
+
+
+    public boolean config(String... args) {
+        try {
+            String output = sh.run("conf.sh", args);
+            return output.equals("0");
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            return false;
+        }
     }
 }
